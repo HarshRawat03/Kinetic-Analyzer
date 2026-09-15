@@ -2,7 +2,7 @@
 
 An interactive, client-side kinetics tool for undergraduate Chemical Reaction Engineering — built with a futuristic, neon HUD-style interface: enter or import concentration–time data, analyze it with the **integrated** or **differential** rate-law method (or let **auto-detect** estimate the order for you), run an **Arrhenius analysis** across multiple temperatures, and export a complete lab report — all running entirely in the browser, no backend required.
 
-**Live demo:** https://harshrawat03.github.io/Reaction_Kinetics_Analyzer1/
+**Live demo:** https://harshrawat03.github.io/Kinetics_Analyzer/
 
 ---
 
