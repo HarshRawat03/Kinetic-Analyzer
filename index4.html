@@ -1,0 +1,1782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reaction Kinetics Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050914;
+  --bg-2:#091020;
+  --panel:#0d1424;
+  --panel-2:#101a30;
+  --border:rgba(0,229,255,0.18);
+  --border-strong:rgba(0,229,255,0.34);
+  --text:#e8f6ff;
+  --text-dim:#93b4d6;
+  --text-faint:#4d6a8a;
+  --accent:#00e5ff;
+  --accent-soft:rgba(0,229,255,0.14);
+  --accent-2:#39ff8c;
+  --accent-2-soft:rgba(57,255,140,0.14);
+  --order3:#ff36d6;
+  --order3-soft:rgba(255,54,214,0.14);
+  --danger:#ff4d6d;
+  --danger-soft:rgba(255,77,109,0.14);
+  --info:#7c8cff;
+  --info-soft:rgba(124,140,255,0.14);
+  --radius-s:6px;
+  --radius-m:10px;
+  --radius-l:16px;
+  --serif: 'Orbitron', 'IBM Plex Sans', sans-serif;
+  --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 12% -10%, rgba(0,229,255,0.16), transparent 60%),
+    radial-gradient(ellipse 700px 600px at 100% 6%, rgba(57,255,140,0.08), transparent 55%),
+    radial-gradient(ellipse 800px 500px at 50% 100%, rgba(124,140,255,0.08), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(0,229,255,0.035) 0px, rgba(0,229,255,0.035) 1px, transparent 1px, transparent 84px),
+    repeating-linear-gradient(90deg, rgba(0,229,255,0.035) 0px, rgba(0,229,255,0.035) 1px, transparent 1px, transparent 84px),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--text);
+  font-family:var(--sans);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  position:relative;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:1;
+  background:repeating-linear-gradient(0deg, rgba(0,229,255,0.025) 0px, rgba(0,229,255,0.025) 1px, transparent 1px, transparent 3px);
+  opacity:0.4;
+  animation:scan 9s linear infinite;
+}
+@keyframes scan{0%{background-position:0 0;}100%{background-position:0 240px;}}
+::selection{background:var(--accent-soft);}
+a{color:var(--accent);}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px;position:relative;z-index:2;}
+
+/* ---------- header ---------- */
+header.masthead{
+  border-bottom:1px solid var(--border);
+  padding:60px 24px 0;
+  background:linear-gradient(180deg, rgba(0,229,255,0.025), transparent);
+  overflow:hidden;
+  position:relative;z-index:2;
+}
+.masthead-inner{
+  max-width:1180px;margin:0 auto;
+  display:grid;grid-template-columns:1.15fr 0.85fr;gap:36px;align-items:center;
+  padding-bottom:40px;
+}
+@media(max-width:900px){.masthead-inner{grid-template-columns:1fr;}}
+.masthead-text{animation:heroIn .7s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes heroIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.eyebrow{
+  font-family:var(--mono);
+  font-size:12.5px;
+  color:var(--accent);
+  letter-spacing:0.06em;
+  margin:0 0 14px;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.eyebrow::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+h1.title{
+  font-family:var(--serif);
+  font-weight:700;
+  font-size:clamp(28px,4vw,46px);
+  line-height:1.15;
+  letter-spacing:0.01em;
+  margin:0 0 16px;
+  max-width:16ch;
+  background:linear-gradient(135deg,var(--text) 35%, var(--accent) 90%, var(--accent-2) 140%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 18px rgba(0,229,255,0.35));
+}
+.subtitle{
+  color:var(--text-dim);
+  font-size:16px;
+  max-width:56ch;
+  margin:0;
+}
+.masthead-meta{
+  display:flex;
+  gap:28px;
+  margin-top:28px;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:12.5px;
+  color:var(--text-faint);
+}
+.masthead-meta span b{color:var(--text-dim);font-weight:500;}
+
+/* ---------- hero graphic ---------- */
+.hero-graphic{
+  background:linear-gradient(165deg, var(--panel-2), var(--panel));
+  border:1px solid var(--border);
+  border-radius:var(--radius-l);
+  padding:20px 20px 14px;
+  animation:heroIn .8s .1s cubic-bezier(.2,.8,.2,1) both;
+  box-shadow:0 30px 60px -30px rgba(0,0,0,0.6);
+}
+.hero-graphic-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.hero-graphic-title{font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:0.04em;}
+.hero-graphic-live{font-family:var(--mono);font-size:10.5px;color:var(--accent-2);display:flex;align-items:center;gap:5px;}
+.hero-graphic-live i{width:6px;height:6px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 3px var(--accent-2-soft);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+.hero-graphic svg{width:100%;height:auto;display:block;}
+.hero-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-family:var(--mono);font-size:10.5px;color:var(--text-faint);}
+.hero-legend span{display:inline-flex;align-items:center;gap:5px;}
+.hero-legend i{width:9px;height:2.5px;border-radius:2px;display:inline-block;}
+
+/* ---------- paged navigation ---------- */
+.page-nav{
+  position:sticky;top:0;z-index:50;
+  display:flex;gap:4px;padding:12px 24px;
+  background:rgba(4,7,16,0.82);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;
+}
+.page-nav-item{
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+  padding:7px 14px 7px 7px;border-radius:999px;border:1px solid transparent;
+  background:transparent;color:var(--text-faint);font-family:var(--sans);font-size:13px;font-weight:500;
+  cursor:pointer;white-space:nowrap;transition:all .15s;
+}
+.page-nav-item .pn-num{
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  border:1px solid var(--border-strong);border-radius:999px;
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.page-nav-item:hover{color:var(--text);}
+.page-nav-item.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);}
+.page-nav-item.active .pn-num{border-color:var(--accent);color:var(--accent);background:var(--bg-2);}
+.page-nav-item.done .pn-num{border-color:var(--accent-2);color:var(--accent-2);}
+
+.page{display:none;padding:40px 0 8px;}
+.page.active-page{display:block;animation:pageIn .32s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.page-pager{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:18px 22px;margin:8px 0 40px;
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-l);
+}
+.pager-status{font-family:var(--mono);font-size:12px;color:var(--text-faint);}
+@media(max-width:560px){
+  .page-pager{flex-wrap:wrap;justify-content:center;text-align:center;}
+  .pager-status{order:3;width:100%;}
+}
+
+/* ---------- sections ---------- */
+section.page{border-bottom:none;}
+.section-head{margin-bottom:22px;display:flex;gap:14px;align-items:flex-start;}
+.section-num{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--accent);
+  border:1px solid var(--border-strong);
+  border-radius:999px;
+  width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  background:var(--bg-2);
+  margin-top:2px;
+}
+.section-head-text{flex:1;}
+.section-title{
+  font-family:var(--serif);
+  font-size:21px;
+  font-weight:600;
+  letter-spacing:0.015em;
+  margin:0 0 6px;
+}
+.section-desc{color:var(--text-dim);font-size:14.5px;max-width:64ch;margin:0;}
+
+/* ---------- panel / card ---------- */
+.panel{
+  background:linear-gradient(180deg, var(--panel-2), var(--panel));
+  border:1px solid var(--border);
+  border-radius:var(--radius-l);
+  padding:22px;
+  box-shadow:0 1px 0 rgba(0,229,255,0.035) inset, 0 24px 48px -32px rgba(0,0,0,0.7);
+}
+.grid-2{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;}
+@media(max-width:860px){.grid-2{grid-template-columns:1fr;}}
+
+/* ---------- form controls ---------- */
+label.field-label{
+  display:block;
+  font-size:12px;
+  font-family:var(--mono);
+  color:var(--text-faint);
+  margin-bottom:6px;
+}
+input[type=text],input[type=number],select,textarea{
+  width:100%;
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-s);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:14px;
+  padding:9px 11px;
+  outline:none;
+  transition:border-color .15s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+@media(max-width:520px){.field-row{grid-template-columns:1fr;}}
+.field{margin-bottom:14px;}
+
+button{
+  font-family:var(--sans);
+  font-size:13.5px;
+  font-weight:500;
+  border-radius:var(--radius-s);
+  border:1px solid var(--border-strong);
+  background:var(--bg-2);
+  color:var(--text);
+  padding:9px 15px;
+  cursor:pointer;
+  transition:border-color .15s, background .15s, transform .1s, box-shadow .15s;
+}
+button:hover{border-color:var(--accent);background:#10192c;}
+button:active{transform:translateY(1px);}
+button.primary{background:linear-gradient(135deg,#7cf5ff,var(--accent));border-color:var(--accent);color:#00232b;font-weight:600;box-shadow:0 8px 20px -8px rgba(0,229,255,0.55);}
+button.primary:hover{box-shadow:0 10px 24px -8px rgba(0,229,255,0.85);transform:translateY(-1px);}
+button.ghost{background:transparent;}
+button.small{padding:6px 11px;font-size:12.5px;}
+button.danger-outline{border-color:rgba(255,77,109,0.45);color:#ff9fb3;}
+button.danger-outline:hover{background:var(--danger-soft);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.file-input{display:none;}
+
+/* ---------- table ---------- */
+.table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-m);}
+table.data-table{width:100%;border-collapse:collapse;font-size:14px;}
+table.data-table th{
+  font-family:var(--mono);
+  font-size:11.5px;
+  text-transform:none;
+  color:var(--text-faint);
+  text-align:left;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  background:rgba(0,229,255,0.02);
+}
+table.data-table td{padding:6px 8px;border-bottom:1px solid var(--border);}
+table.data-table tr:last-child td{border-bottom:none;}
+table.data-table input{padding:6px 8px;font-size:13.5px;font-family:var(--mono);}
+table.data-table td.idx{color:var(--text-faint);font-family:var(--mono);font-size:12px;padding-left:14px;width:28px;}
+table.data-table td.rm{width:34px;text-align:center;}
+.rm-btn{
+  background:transparent;border:none;color:var(--text-faint);cursor:pointer;
+  font-size:16px;line-height:1;padding:4px;border-radius:4px;
+}
+.rm-btn:hover{color:var(--danger);background:var(--danger-soft);}
+
+/* ---------- mode / order selector ---------- */
+.mode-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.mode-tab{
+  padding:10px 16px 10px 34px;border-radius:999px;border:1px solid var(--border);
+  background:var(--bg-2);cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text-dim);
+  transition:all .15s;position:relative;
+}
+.mode-tab::before{
+  content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text-faint);
+  transition:all .15s;
+}
+.mode-tab .mt-desc{display:block;font-size:11px;font-weight:400;color:var(--text-faint);margin-top:2px;}
+.mode-tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);box-shadow:0 4px 16px -6px rgba(0,229,255,0.45);}
+.mode-tab.active::before{border-color:var(--accent);background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.mode-tab.active .mt-desc{color:#7dfcff;}
+
+.order-pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.order-pill{
+  padding:8px 14px 8px 24px;border-radius:var(--radius-s);border:1px solid var(--border);
+  background:var(--bg-2);cursor:pointer;font-family:var(--mono);font-size:13px;color:var(--text-dim);
+  position:relative;transition:all .15s;
+}
+.order-pill::before{
+  content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:6px;height:6px;border-radius:2px;background:var(--border-strong);
+}
+.order-pill[data-order="0"]::before{background:var(--accent);}
+.order-pill[data-order="1"]::before{background:var(--accent-2);}
+.order-pill[data-order="2"]::before{background:var(--info);}
+.order-pill[data-order="3"]::before{background:var(--order3);}
+.order-pill.active{border-color:var(--accent-2);background:var(--accent-2-soft);color:var(--accent-2);}
+
+.method-note{
+  margin-top:16px;padding:13px 15px;border-radius:var(--radius-m);
+  background:var(--info-soft);border:1px solid rgba(124,140,255,0.35);
+  font-size:13px;color:#b9e8ff;
+}
+.method-note b{color:#eafbff;}
+
+/* ---------- results cards ---------- */
+.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:18px;}
+.result-card{
+  background:var(--bg-2);border:1px solid var(--border);border-left:3px solid var(--border-strong);border-radius:var(--radius-m);
+  padding:16px;position:relative;transition:border-color .15s, background .15s;
+}
+.result-card:hover{background:#101a2c;}
+.result-card.selected{border-color:var(--accent);border-left-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;}
+.result-card.invalid{opacity:0.5;}
+.rc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.rc-title{font-family:var(--serif);font-size:15px;font-weight:600;letter-spacing:0.02em;}
+.rc-badge{font-family:var(--mono);font-size:10.5px;padding:3px 8px;border-radius:999px;border:1px solid var(--border-strong);color:var(--text-faint);}
+.rc-badge.best{border-color:var(--accent-2);color:var(--accent-2);background:var(--accent-2-soft);}
+.rc-eq{font-family:var(--mono);font-size:13px;color:var(--text-dim);margin-bottom:12px;}
+.rc-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;}
+.rc-metric-label{font-size:11px;color:var(--text-faint);font-family:var(--mono);}
+.rc-metric-val{font-family:var(--mono);font-size:15px;color:var(--text);}
+.rc-invalid-note{margin-top:10px;font-size:12px;color:var(--danger);}
+
+/* ---------- auto-detect summary ---------- */
+.auto-summary{
+  margin-top:18px;padding:24px;border-radius:var(--radius-m);
+  background:linear-gradient(135deg, var(--accent-soft), transparent);
+  border:1px solid rgba(0,229,255,0.4);
+  position:relative;overflow:hidden;
+}
+.auto-summary::after{
+  content:'≈';position:absolute;right:12px;top:-30px;font-family:var(--serif);
+  font-size:170px;color:rgba(0,229,255,0.08);line-height:1;pointer-events:none;
+}
+.auto-headline{font-family:var(--serif);font-size:17px;font-weight:600;letter-spacing:0.02em;margin:0 0 6px;position:relative;}
+.auto-order-value{font-family:var(--mono);color:var(--accent);font-size:22px;}
+.auto-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:16px;position:relative;}
+.auto-stat-label{font-size:11px;color:var(--text-faint);font-family:var(--mono);}
+.auto-stat-val{font-family:var(--mono);font-size:16px;margin-top:3px;}
+.warn-box{
+  margin-top:14px;padding:12px 14px;border-radius:var(--radius-s);
+  background:var(--danger-soft);border:1px solid rgba(255,77,109,0.4);
+  font-size:13px;color:#ffb3c2;position:relative;
+}
+
+/* ---------- chart tabs ---------- */
+.chart-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.chart-tab{
+  padding:7px 13px;border-radius:var(--radius-s);border:1px solid var(--border);
+  background:transparent;font-size:12.5px;color:var(--text-dim);cursor:pointer;
+  border-bottom:2px solid transparent;
+}
+.chart-tab.active{background:var(--panel-2);border-color:var(--border-strong);border-bottom-color:var(--accent);color:var(--text);}
+.chart-holder{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-m);padding:16px;}
+svg.chart{width:100%;height:auto;display:block;}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;font-family:var(--mono);color:var(--text-dim);}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+/* ---------- report ---------- */
+.report-box{
+  background:
+    linear-gradient(var(--bg-2),var(--bg-2)) padding-box,
+    var(--bg-2);
+  border:1px solid var(--border);border-radius:var(--radius-m);
+  padding:20px;font-family:var(--mono);font-size:12.8px;line-height:1.7;color:#cfe9ff;
+  white-space:pre-wrap;max-height:420px;overflow-y:auto;
+  background-image:linear-gradient(rgba(0,229,255,0.05) 1px, transparent 1px);
+  background-size:100% 1.7em;
+}
+
+/* ---------- misc ---------- */
+.hint{font-size:12.5px;color:var(--text-faint);margin-top:8px;}
+footer{padding:44px 24px 36px;text-align:center;color:var(--text-faint);font-size:12.5px;font-family:var(--mono);border-top:1px solid var(--border);position:relative;z-index:2;}
+footer .footer-mark{color:var(--accent);}
+.divider-label{
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  display:flex;align-items:center;gap:10px;margin:18px 0 12px;
+}
+.divider-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+@media(max-width:600px){
+  .wrap{padding:0 16px 60px;}
+  header.masthead{padding:36px 16px 0;}
+}
+@media print{
+  header.masthead, .page-nav, .page-pager, #sec-data, #sec-method, #sec-charts, #sec-arrhenius, footer, .btn-row{display:none !important;}
+  #sec-report{display:block !important;}
+  body{background:#fff;color:#111;}
+  .report-box{color:#111;max-height:none;background:#fff;background-image:none;border-color:#ccc;}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-text">
+      <p class="eyebrow">CHEMICAL REACTION ENGINEERING · KINETIC ANALYSIS TOOL</p>
+      <h1 class="title">Reaction Kinetics Analyzer</h1>
+      <p class="subtitle">Enter concentration–time data, choose an integrated or differential rate-law method — or let auto-detect determine the order for you — and export a full kinetic report.</p>
+      <div class="masthead-meta">
+        <span><b>Method families</b> Integrated · Differential · Auto-Detect</span>
+        <span><b>Orders</b> 0, 1, 2, 3, or custom n</span>
+        <span><b>Runs</b> entirely client-side</span>
+      </div>
+    </div>
+    <div class="hero-graphic">
+      <div class="hero-graphic-head">
+        <span class="hero-graphic-title">[A] vs t — SAME DATA, THREE MODELS</span>
+        <span class="hero-graphic-live"><i></i>live example</span>
+      </div>
+      <svg viewBox="0 0 380 240" xmlns="http://www.w3.org/2000/svg">
+        <!-- grid -->
+        <g stroke="rgba(0,229,255,0.10)" stroke-width="1">
+          <line x1="32" y1="42" x2="32" y2="208"/>
+          <line x1="111" y1="42" x2="111" y2="208"/>
+          <line x1="190" y1="42" x2="190" y2="208"/>
+          <line x1="269" y1="42" x2="269" y2="208"/>
+          <line x1="348" y1="42" x2="348" y2="208"/>
+          <line x1="32" y1="42" x2="348" y2="42"/>
+          <line x1="32" y1="83" x2="348" y2="83"/>
+          <line x1="32" y1="125" x2="348" y2="125"/>
+          <line x1="32" y1="166" x2="348" y2="166"/>
+          <line x1="32" y1="208" x2="348" y2="208"/>
+        </g>
+        <line x1="32" y1="208" x2="348" y2="208" stroke="rgba(150,200,255,0.35)"/>
+        <line x1="32" y1="42" x2="32" y2="208" stroke="rgba(150,200,255,0.35)"/>
+        <path d="M32.0,49.9 L44.6,54.6 L57.3,59.4 L69.9,64.1 L82.6,68.9 L95.2,73.6 L107.8,78.4 L120.5,83.1 L133.1,87.8 L145.8,92.6 L158.4,97.3 L171.0,102.1 L183.7,106.8 L196.3,111.6 L209.0,116.3 L221.6,121.0 L234.2,125.8 L246.9,130.5 L259.5,135.3 L272.2,140.0 L284.8,144.8 L297.4,149.5 L310.1,154.2 L322.7,159.0 L335.4,163.7 L348.0,168.5" fill="none" stroke="#00e5ff" stroke-width="2.25"/>
+        <path d="M32.0,49.9 L44.6,62.6 L57.3,74.4 L69.9,85.1 L82.6,95.0 L95.2,104.1 L107.8,112.5 L120.5,120.2 L133.1,127.3 L145.8,133.8 L158.4,139.7 L171.0,145.2 L183.7,150.3 L196.3,155.0 L209.0,159.2 L221.6,163.2 L234.2,166.8 L246.9,170.1 L259.5,173.1 L272.2,176.0 L284.8,178.5 L297.4,180.9 L310.1,183.1 L322.7,185.1 L335.4,186.9 L348.0,188.6" fill="none" stroke="#39ff8c" stroke-width="2.25"/>
+        <path d="M32.0,49.9 L44.6,59.4 L57.3,67.8 L69.9,75.4 L82.6,82.1 L95.2,88.2 L107.8,93.8 L120.5,98.8 L133.1,103.4 L145.8,107.7 L158.4,111.6 L171.0,115.2 L183.7,118.6 L196.3,121.7 L209.0,124.6 L221.6,127.3 L234.2,129.9 L246.9,132.3 L259.5,134.5 L272.2,136.7 L284.8,138.7 L297.4,140.6 L310.1,142.3 L322.7,144.0 L335.4,145.7 L348.0,147.2" fill="none" stroke="#7c8cff" stroke-width="2.25"/>
+        <text x="32" y="224" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#5a7fa8">t = 0</text>
+        <text x="326" y="224" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#5a7fa8">t = 100</text>
+      </svg>
+      <div class="hero-legend">
+        <span><i style="background:#00e5ff;"></i>order 0</span>
+        <span><i style="background:#39ff8c;"></i>order 1</span>
+        <span><i style="background:#7c8cff;"></i>order 2</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="page-nav" id="pageNav">
+  <button class="page-nav-item" data-page="sec-data"><span class="pn-num">01</span>Data</button>
+  <button class="page-nav-item" data-page="sec-method"><span class="pn-num">02</span>Method</button>
+  <button class="page-nav-item" data-page="sec-results"><span class="pn-num">03</span>Results</button>
+  <button class="page-nav-item" data-page="sec-charts"><span class="pn-num">04</span>Charts</button>
+  <button class="page-nav-item" data-page="sec-report"><span class="pn-num">05</span>Report</button>
+  <button class="page-nav-item" data-page="sec-arrhenius"><span class="pn-num">06</span>Arrhenius</button>
+</nav>
+
+<div class="wrap">
+
+  <!-- ============ 1. DATA ============ -->
+  <section id="sec-data" class="page">
+    <div class="section-head">
+      <p class="section-num">01</p>
+      <div class="section-head-text"><h2 class="section-title">Experiment data</h2>
+      <p class="section-desc">Enter time–concentration observations manually, import a CSV, or load a worked example.</p></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="table-scroll">
+          <table class="data-table" id="dataTable">
+            <thead>
+              <tr><th class="idx">#</th><th id="thTime">Time</th><th id="thConc">Concentration</th><th class="rm"></th></tr>
+            </thead>
+            <tbody id="dataBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row">
+          <button id="addRowBtn" class="small">+ Add observation</button>
+          <button id="importCsvBtn" class="small">Import CSV</button>
+          <input type="file" id="csvFile" class="file-input" accept=".csv">
+          <button id="clearBtn" class="small danger-outline">Clear data</button>
+        </div>
+        <div class="divider-label">EXAMPLE DATASETS</div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="small ghost" data-example="zero">Zero-order</button>
+          <button class="small ghost" data-example="first">First-order</button>
+          <button class="small ghost" data-example="second">Second-order</button>
+          <button class="small ghost" data-example="noisy">Noisy / unknown order</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="field">
+          <label class="field-label">EXPERIMENT NAME</label>
+          <input type="text" id="expName" placeholder="e.g. Ester hydrolysis, batch 3">
+        </div>
+        <div class="field">
+          <label class="field-label">TEMPERATURE</label>
+          <input type="text" id="expTemp" placeholder="e.g. 298 K">
+        </div>
+        <div class="field-row">
+          <div>
+            <label class="field-label">TIME UNIT</label>
+            <select id="timeUnit">
+              <option value="s">seconds (s)</option>
+              <option value="min" selected>minutes (min)</option>
+              <option value="hr">hours (hr)</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">CONC. UNIT</label>
+            <select id="concUnit">
+              <option value="mol/L" selected>mol/L</option>
+              <option value="mmol/L">mmol/L</option>
+              <option value="M">M</option>
+              <option value="g/L">g/L</option>
+            </select>
+          </div>
+        </div>
+        <p class="hint">Units are used only for labelling axes and the report — no unit conversion is performed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. METHOD ============ -->
+  <section id="sec-method" class="page">
+    <div class="section-head">
+      <p class="section-num">02</p>
+      <div class="section-head-text"><h2 class="section-title">Analysis method</h2>
+      <p class="section-desc">Choose how the reaction order and rate constant are determined.</p></div>
+    </div>
+
+    <div class="panel">
+      <div class="mode-tabs" id="modeTabs">
+        <div class="mode-tab" data-mode="integrated">Integrated rate law<span class="mt-desc">Fit C(t) directly — assumes an order</span></div>
+        <div class="mode-tab" data-mode="differential">Differential rate law<span class="mt-desc">Fit rate vs. concentration</span></div>
+        <div class="mode-tab" data-mode="auto">Auto-detect (unknown order)<span class="mt-desc">Estimates order from the data itself</span></div>
+      </div>
+
+      <div id="orderSelectorWrap">
+        <label class="field-label">ORDER</label>
+        <div class="order-pills" id="orderPills">
+          <div class="order-pill" data-order="0">n = 0</div>
+          <div class="order-pill" data-order="1">n = 1</div>
+          <div class="order-pill" data-order="2">n = 2</div>
+          <div class="order-pill" data-order="3">n = 3</div>
+          <div class="order-pill" data-order="custom">Custom n</div>
+          <div class="order-pill" data-order="best">Best fit ✦</div>
+        </div>
+        <div id="customOrderWrap" style="display:none;margin-top:14px;max-width:220px;">
+          <label class="field-label">CUSTOM ORDER (n)</label>
+          <input type="number" step="any" id="customOrderInput" placeholder="e.g. 1.5">
+          <p class="hint">Any real number — including fractional or higher orders.</p>
+        </div>
+      </div>
+
+      <div class="method-note" id="methodNote"></div>
+    </div>
+  </section>
+
+  <!-- ============ 3. RESULTS ============ -->
+  <section id="sec-results" class="page">
+    <div class="section-head">
+      <p class="section-num">03</p>
+      <div class="section-head-text"><h2 class="section-title">Results</h2>
+      <p class="section-desc" id="resultsDesc">Every valid reaction order, with its rate constant, fit quality and eligibility.</p></div>
+    </div>
+    <div id="resultsArea"></div>
+  </section>
+
+  <!-- ============ 4. CHARTS ============ -->
+  <section id="sec-charts" class="page">
+    <div class="section-head">
+      <p class="section-num">04</p>
+      <div class="section-head-text"><h2 class="section-title">Charts</h2>
+      <p class="section-desc">Observed vs predicted, the linearized fit, residuals, and a full order comparison.</p></div>
+    </div>
+    <div class="chart-tabs" id="chartTabs"></div>
+    <div class="chart-holder" id="chartHolder"></div>
+  </section>
+
+  <!-- ============ 5. REPORT ============ -->
+  <section id="sec-report" class="page">
+    <div class="section-head">
+      <p class="section-num">05</p>
+      <div class="section-head-text"><h2 class="section-title">Report</h2>
+      <p class="section-desc">A plain-text summary of the method, fitted parameters and conclusion — ready to export.</p></div>
+    </div>
+    <div class="panel">
+      <div class="report-box" id="reportBox"></div>
+      <div class="btn-row">
+        <button class="primary" id="exportBtn">Export report (.txt)</button>
+        <button class="ghost" id="printBtn">Print report</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 6. ARRHENIUS ============ -->
+  <section id="sec-arrhenius" class="page">
+    <div class="section-head">
+      <p class="section-num">06</p>
+      <div class="section-head-text"><h2 class="section-title">Arrhenius analysis</h2>
+      <p class="section-desc">Combine rate constants from experiments at different temperatures to estimate the activation energy Eₐ and pre-exponential factor A.</p></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="table-scroll">
+          <table class="data-table" id="arrTable">
+            <thead>
+              <tr><th class="idx">#</th><th id="arrThTemp">Temperature</th><th>Rate constant k</th><th class="rm"></th></tr>
+            </thead>
+            <tbody id="arrBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-row">
+          <button id="arrAddRowBtn" class="small">+ Add point</button>
+          <button id="arrAddFromResultsBtn" class="small">+ Use current result's k</button>
+          <button id="arrClearBtn" class="small danger-outline">Clear</button>
+        </div>
+        <div class="divider-label">EXAMPLE DATASET</div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="small ghost" id="arrExampleBtn">Load example (Eₐ ≈ 50 kJ/mol)</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="field">
+          <label class="field-label">TEMPERATURE UNIT (entered above)</label>
+          <select id="arrTempUnit">
+            <option value="K" selected>Kelvin (K)</option>
+            <option value="C">Celsius (°C)</option>
+          </select>
+        </div>
+        <p class="hint">Add at least 2 (Temperature, k) pairs from separate runs of the same reaction — 3 or more gives a meaningful R². "Use current result's k" grabs the selected fit's k from the Results page and the Temperature field from the Data page.</p>
+        <div class="method-note" id="arrNote"><b>Arrhenius equation:</b> k = A·exp(−Eₐ / RT), linearized as ln k = ln A − (Eₐ/R)(1/T). Plotting ln k vs 1/T gives a line of slope −Eₐ/R and intercept ln A.</div>
+      </div>
+    </div>
+
+    <div id="arrResultsArea" style="margin-top:20px;"></div>
+
+    <div class="chart-holder" id="arrChartHolder" style="margin-top:18px;"></div>
+  </section>
+
+  <div class="page-pager">
+    <button class="ghost" id="pagerBack">← Back</button>
+    <span class="pager-status" id="pagerStatus"></span>
+    <button class="primary" id="pagerNext">Continue →</button>
+  </div>
+
+</div>
+
+<footer><span class="footer-mark">◆</span> Reaction Kinetics Analyzer · client-side JavaScript · no data leaves your browser</footer>
+
+<script>
+(function(){
+
+/* =========================================================================
+   STATE
+   ========================================================================= */
+let data = [];      // [{t:number, c:number}]
+let mode = 'integrated';       // integrated | differential | auto
+let order = 'best';            // '0' | '1' | '2' | '3' | 'custom' | 'best'
+let customN = 1.5;             // active value when order === 'custom'
+let chartTab = 'fit';
+const STANDARD_ORDERS = [0,1,2,3];
+
+const els = {
+  dataBody: document.getElementById('dataBody'),
+  thTime: document.getElementById('thTime'),
+  thConc: document.getElementById('thConc'),
+  timeUnit: document.getElementById('timeUnit'),
+  concUnit: document.getElementById('concUnit'),
+  modeTabs: document.getElementById('modeTabs'),
+  orderPills: document.getElementById('orderPills'),
+  orderSelectorWrap: document.getElementById('orderSelectorWrap'),
+  methodNote: document.getElementById('methodNote'),
+  resultsArea: document.getElementById('resultsArea'),
+  resultsDesc: document.getElementById('resultsDesc'),
+  chartTabs: document.getElementById('chartTabs'),
+  chartHolder: document.getElementById('chartHolder'),
+  reportBox: document.getElementById('reportBox'),
+  customOrderWrap: document.getElementById('customOrderWrap'),
+  customOrderInput: document.getElementById('customOrderInput'),
+};
+
+/* =========================================================================
+   EXAMPLE DATA
+   ========================================================================= */
+const EXAMPLES = {
+  zero: {C0:1.0,k:0.02,order:0,n:9,dt:5,noise:0.004},
+  first:{C0:1.0,k:0.045,order:1,n:9,dt:5,noise:0.004},
+  second:{C0:1.0,k:0.08,order:2,n:9,dt:5,noise:0.004},
+};
+
+function genExample(kind){
+  if(kind==='noisy'){
+    // genuinely mixed / fractional-order-looking synthetic data (order ~1.5), heavier noise
+    const C0=1.0,k=0.05,n=1.5, dt=4, pts=10;
+    const rows=[];
+    for(let i=0;i<pts;i++){
+      const t=i*dt;
+      // integrate dC/dt = -k C^n analytically for n!=1: C = [C0^(1-n) + (n-1) k t]^(1/(1-n))
+      const base = Math.pow(C0,1-n) + (n-1)*k*t;
+      let c = base>0 ? Math.pow(base,1/(1-n)) : 0.001;
+      const noise = (Math.random()-0.5)*0.05*c;
+      c = Math.max(0.001, c+noise);
+      rows.push({t:round4(t), c:round4(c)});
+    }
+    return rows;
+  }
+  const spec = EXAMPLES[kind];
+  const rows=[];
+  for(let i=0;i<spec.n;i++){
+    const t = i*spec.dt;
+    let c;
+    if(spec.order===0) c = spec.C0 - spec.k*t;
+    else if(spec.order===1) c = spec.C0*Math.exp(-spec.k*t);
+    else c = 1/(1/spec.C0 + spec.k*t);
+    c = Math.max(0.001, c + (Math.random()-0.5)*spec.noise);
+    rows.push({t:round4(t), c:round4(c)});
+  }
+  return rows;
+}
+function round4(x){return Math.round(x*10000)/10000;}
+
+/* =========================================================================
+   TABLE RENDERING
+   ========================================================================= */
+function renderTable(){
+  els.dataBody.innerHTML='';
+  data.forEach((row,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td class="idx">${i+1}</td>
+      <td><input type="number" step="any" value="${row.t}" data-i="${i}" data-f="t"></td>
+      <td><input type="number" step="any" value="${row.c}" data-i="${i}" data-f="c"></td>
+      <td class="rm"><button class="rm-btn" data-rm="${i}" title="Remove">×</button></td>`;
+    els.dataBody.appendChild(tr);
+  });
+  updateUnitHeaders();
+}
+function updateUnitHeaders(){
+  els.thTime.textContent = `Time (${els.timeUnit.value})`;
+  els.thConc.textContent = `Concentration (${els.concUnit.value})`;
+}
+
+els.dataBody.addEventListener('input', e=>{
+  const t=e.target;
+  if(t.dataset.i===undefined) return;
+  const i=+t.dataset.i, f=t.dataset.f;
+  const v=parseFloat(t.value);
+  data[i][f]=isNaN(v)?0:v;
+  runAnalysis();
+});
+els.dataBody.addEventListener('click', e=>{
+  if(e.target.dataset.rm!==undefined){
+    data.splice(+e.target.dataset.rm,1);
+    renderTable();
+    runAnalysis();
+  }
+});
+document.getElementById('addRowBtn').addEventListener('click',()=>{
+  const lastT = data.length? data[data.length-1].t+1 : 0;
+  data.push({t:lastT,c:0});
+  renderTable();
+  runAnalysis();
+});
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  data=[]; renderTable(); runAnalysis();
+});
+document.querySelectorAll('[data-example]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    data = genExample(btn.dataset.example);
+    renderTable();
+    runAnalysis();
+  });
+});
+[els.timeUnit, els.concUnit].forEach(sel=>sel.addEventListener('change',()=>{updateUnitHeaders(); runAnalysis();}));
+
+/* CSV import */
+document.getElementById('importCsvBtn').addEventListener('click',()=>document.getElementById('csvFile').click());
+document.getElementById('csvFile').addEventListener('change', e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const rows = parseCSV(reader.result);
+      if(rows.length===0){ alert('No valid rows found. Expect two columns: time, concentration (with a header row).'); return; }
+      data = rows;
+      renderTable();
+      runAnalysis();
+    }catch(err){
+      alert('Could not parse CSV: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+function parseCSV(text){
+  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length);
+  if(!lines.length) return [];
+  let start=0;
+  const first = lines[0].split(',');
+  if(isNaN(parseFloat(first[0]))) start=1; // header row present
+  const out=[];
+  for(let i=start;i<lines.length;i++){
+    const parts = lines[i].split(',');
+    const t=parseFloat(parts[0]), c=parseFloat(parts[1]);
+    if(!isNaN(t) && !isNaN(c)) out.push({t,c});
+  }
+  return out.sort((a,b)=>a.t-b.t);
+}
+
+/* =========================================================================
+   MODE / ORDER SELECTORS
+   ========================================================================= */
+els.modeTabs.addEventListener('click', e=>{
+  const t = e.target.closest('.mode-tab');
+  if(!t) return;
+  mode = t.dataset.mode;
+  chartTab='fit';
+  renderModeUI();
+  runAnalysis();
+});
+els.orderPills.addEventListener('click', e=>{
+  const t = e.target.closest('.order-pill');
+  if(!t) return;
+  order = t.dataset.order;
+  renderModeUI();
+  runAnalysis();
+});
+els.customOrderInput.addEventListener('input', ()=>{
+  const v = parseFloat(els.customOrderInput.value);
+  if(!isNaN(v)) customN = v;
+  if(order==='custom') runAnalysis();
+});
+
+function renderModeUI(){
+  [...els.modeTabs.children].forEach(c=>c.classList.toggle('active', c.dataset.mode===mode));
+  els.orderSelectorWrap.style.display = mode==='auto' ? 'none' : 'block';
+  [...els.orderPills.children].forEach(c=>c.classList.toggle('active', c.dataset.order===order));
+  els.customOrderWrap.style.display = order==='custom' ? 'block' : 'none';
+  if(order==='custom' && els.customOrderInput.value==='') els.customOrderInput.value = customN;
+
+  const notes = {
+    integrated: `<b>Integrated method:</b> fits the concentration-time profile directly against the linearized form of each order's integrated rate law (C vs t, ln C vs t, [A]^(1−n) vs t). Choose order 0, 1, 2, 3, any custom n, or let auto-select pick the best of 0–3.`,
+    differential: `<b>Differential method:</b> estimates the instantaneous rate −dC/dt at each point by finite differences, then fits rate against concentration for the chosen order (rate = k·Cⁿ) — order 0, 1, 2, 3, or a custom n. More sensitive to noise than the integrated method, but doesn't require integrating the rate law.`,
+    auto: `<b>Auto-detect:</b> makes no assumption about the order. It regresses ln(rate) vs ln(C) from the differential data — the slope <i>is</i> the reaction order, even if it isn't a whole number — then cross-checks that estimate against the best integrated fit among n = 0, 1, 2, 3.`,
+  };
+  els.methodNote.innerHTML = notes[mode];
+  els.resultsDesc.textContent = mode==='auto'
+    ? 'The order estimated directly from the data, cross-checked against the best-fitting standard order.'
+    : (mode==='integrated'
+        ? 'Standard orders (0, 1, 2, 3) fit against the integrated rate law, with rate constant and R² — plus your custom order, if selected.'
+        : 'Standard orders (0, 1, 2, 3) fit against the differential rate law, with rate constant and fit quality — plus your custom order, if selected.');
+}
+
+/* =========================================================================
+   MATH HELPERS
+   ========================================================================= */
+function tCritical95(dof){
+  const table = {1:12.706,2:4.303,3:3.182,4:2.776,5:2.571,6:2.447,7:2.365,8:2.306,9:2.262,10:2.228,
+    11:2.201,12:2.179,13:2.160,14:2.145,15:2.131,16:2.120,17:2.110,18:2.101,19:2.093,20:2.086,
+    21:2.080,22:2.074,23:2.069,24:2.064,25:2.060,26:2.056,27:2.052,28:2.048,29:2.045,30:2.042};
+  if(dof<=0) return NaN;
+  if(table[dof]!==undefined) return table[dof];
+  return dof>30 ? 1.96 : table[Math.max(1,Math.round(dof))];
+}
+function linreg(xs, ys){
+  const n=xs.length;
+  let sx=0,sy=0,sxx=0,sxy=0;
+  for(let i=0;i<n;i++){ sx+=xs[i]; sy+=ys[i]; sxx+=xs[i]*xs[i]; sxy+=xs[i]*ys[i]; }
+  const denom = n*sxx - sx*sx;
+  const slope = denom!==0 ? (n*sxy - sx*sy)/denom : 0;
+  const intercept = (sy - slope*sx)/n;
+  const yMean = sy/n;
+  const xMean = sx/n;
+  let ssTot=0, ssRes=0, sxxDev=0;
+  for(let i=0;i<n;i++){
+    const pred = slope*xs[i]+intercept;
+    ssTot += (ys[i]-yMean)**2;
+    ssRes += (ys[i]-pred)**2;
+    sxxDev += (xs[i]-xMean)**2;
+  }
+  const r2 = ssTot>0 ? 1-ssRes/ssTot : 1;
+  const dof = n-2;
+  const seSlope = (dof>0 && sxxDev>0) ? Math.sqrt((ssRes/dof)/sxxDev) : NaN;
+  return {slope, intercept, r2, seSlope, dof};
+}
+/* regression forced through the origin: y = k*x (used by the differential method) */
+function linregOrigin(xs, ys){
+  const n=xs.length;
+  let sxy=0, sxx=0;
+  for(let i=0;i<n;i++){ sxy+=xs[i]*ys[i]; sxx+=xs[i]*xs[i]; }
+  const k = sxx!==0 ? sxy/sxx : 0;
+  let ssRes=0;
+  for(let i=0;i<n;i++){ const pred=k*xs[i]; ssRes += (ys[i]-pred)**2; }
+  const dof = n-1;
+  const seK = (dof>0 && sxx>0) ? Math.sqrt((ssRes/dof)/sxx) : NaN;
+  return {k, seK, dof};
+}
+function rmse(obs, pred){
+  const n=obs.length;
+  let s=0;
+  for(let i=0;i<n;i++) s += (obs[i]-pred[i])**2;
+  return Math.sqrt(s/n);
+}
+function mean(a){ return a.reduce((x,y)=>x+y,0)/a.length; }
+function std(a){ const m=mean(a); return Math.sqrt(mean(a.map(x=>(x-m)**2))); }
+
+/* =========================================================================
+   EQUATION / UNIT LABELS (shared by integrated + differential, any order)
+   ========================================================================= */
+function trimNum(x){
+  const r = Math.round(x*1000)/1000;
+  return r.toString();
+}
+function kUnitStr(n, concUnit, timeUnit){
+  const exp = 1-n;
+  if(Math.abs(exp)<1e-9) return `1/${timeUnit}`;
+  if(Math.abs(exp-1)<1e-9) return `${concUnit}/${timeUnit}`;
+  return `(${concUnit})^${trimNum(exp)}/${timeUnit}`;
+}
+function integratedEquationLabel(n){
+  if(n===0) return '[A] = [A]₀ − kt';
+  if(n===1) return 'ln[A] = ln[A]₀ − kt';
+  if(n===2) return '1/[A] = 1/[A]₀ + kt';
+  if(n===3) return '1/[A]² = 1/[A]₀² + 2kt';
+  return `[A]^(1−n) = [A]₀^(1−n) + (n−1)kt  (n = ${trimNum(n)})`;
+}
+function differentialEquationLabel(n){
+  if(n===0) return 'rate = k';
+  if(n===1) return 'rate = k[A]';
+  if(n===2) return 'rate = k[A]²';
+  if(n===3) return 'rate = k[A]³';
+  return `rate = k[A]^${trimNum(n)}`;
+}
+
+/* =========================================================================
+   INTEGRATED METHOD (generalized to any order n, including fractional / >3)
+   ========================================================================= */
+function fitIntegrated(n, rows){
+  const ts = rows.map(r=>r.t);
+  const cs = rows.map(r=>r.c);
+  let valid = true, invalidReason='';
+  let linX=ts, linY;
+  if(n===0){
+    linY = cs;
+  } else if(n===1){
+    if(cs.some(c=>c<=0)){ valid=false; invalidReason='requires all concentrations > 0 (for ln C)'; }
+    linY = cs.map(c=>Math.log(Math.max(c,1e-9)));
+  } else {
+    if(cs.some(c=>c<=0)){ valid=false; invalidReason='requires all concentrations > 0 (for [A]^(1−n))'; }
+    linY = cs.map(c=>Math.pow(Math.max(c,1e-9), 1-n));
+  }
+  const {slope, intercept, r2, seSlope, dof} = linreg(linX, linY);
+  let k, C0, predicted, halfLife;
+  if(n===0){
+    k=-slope; C0=intercept;
+    predicted = ts.map(t=>C0-k*t);
+    halfLife = k!==0? C0/(2*k) : Infinity;
+  } else if(n===1){
+    k=-slope; C0=Math.exp(intercept);
+    predicted = ts.map(t=>C0*Math.exp(-k*t));
+    halfLife = k!==0? Math.log(2)/k : Infinity;
+  } else {
+    k = slope/(n-1);
+    C0 = intercept>0 ? Math.pow(intercept, 1/(1-n)) : NaN;
+    predicted = ts.map(t=>{
+      const base = intercept + slope*t;
+      return base>0 ? Math.pow(base, 1/(1-n)) : 0;
+    });
+    halfLife = slope!==0 ? intercept*(Math.pow(2,n-1)-1)/slope : Infinity;
+  }
+  const kSE = n===1 ? seSlope : (n===0 ? seSlope : (isNaN(seSlope)?NaN:seSlope/Math.abs(n-1)));
+  const tval = tCritical95(dof);
+  const kCI95 = (!isNaN(kSE) && !isNaN(tval)) ? tval*kSE : NaN;
+  if(isNaN(k) || !isFinite(k)){ valid=false; invalidReason = invalidReason || 'could not compute a finite rate constant for this order'; }
+  else if(k<0){ valid=false; invalidReason = invalidReason || 'fitted rate constant is negative — not physically meaningful for this order'; }
+  const residuals = cs.map((c,i)=>c-predicted[i]);
+  const rmseVal = rmse(cs, predicted);
+  return {order:n, method:'integrated', equation:integratedEquationLabel(n), k, kSE, kCI95, dof,
+          kUnit:kUnitStr(n, els.concUnit.value, els.timeUnit.value), C0, r2, rmse:rmseVal,
+          slope, intercept, predicted, residuals, halfLife, valid, invalidReason,
+          linX, linY, tArr:ts, cArr:cs};
+}
+
+/* =========================================================================
+   DIFFERENTIAL METHOD
+   ========================================================================= */
+function computeRates(rows){
+  // central difference for interior points, forward/backward at ends
+  const n = rows.length;
+  const rates = new Array(n);
+  for(let i=0;i<n;i++){
+    if(n<2){ rates[i]=NaN; continue; }
+    if(i===0){
+      rates[i] = -(rows[1].c-rows[0].c)/(rows[1].t-rows[0].t);
+    } else if(i===n-1){
+      rates[i] = -(rows[n-1].c-rows[n-2].c)/(rows[n-1].t-rows[n-2].t);
+    } else {
+      rates[i] = -(rows[i+1].c-rows[i-1].c)/(rows[i+1].t-rows[i-1].t);
+    }
+  }
+  return rates;
+}
+
+function fitDifferentialOrder(order, rows, rates){
+  const cs = rows.map(r=>r.c);
+  let valid=true, invalidReason='';
+  let k, predicted, r2OrMetric, metricType, kSE, kCI95, dof;
+  if(order===0){
+    k = mean(rates);
+    predicted = rates.map(()=>k);
+    const sd = std(rates);
+    metricType='cv';
+    r2OrMetric = k!==0 ? sd/Math.abs(k) : Infinity; // coefficient of variation - lower is better
+    dof = rates.length-1;
+    kSE = dof>0 ? sd/Math.sqrt(rates.length) : NaN;
+    if(k<0){valid=false; invalidReason='average rate is negative — not physically meaningful';}
+  } else {
+    if(cs.some(c=>c<=0)){ valid=false; invalidReason=`requires all concentrations > 0 (for C^${order})`; }
+    const xs = cs.map(c=>Math.pow(Math.max(c,1e-9), order));
+    const reg = linregOrigin(xs, rates);
+    k = reg.k; kSE = reg.seK; dof = reg.dof;
+    predicted = xs.map(x=>k*x);
+    const m = mean(rates);
+    let ssTot=0, ssRes=0;
+    rates.forEach((r,i)=>{ ssTot+=(r-m)**2; ssRes+=(r-predicted[i])**2; });
+    r2OrMetric = ssTot>0 ? 1-ssRes/ssTot : 1;
+    metricType='r2';
+    if(k<0){valid=false; invalidReason='fitted rate constant is negative — not physically meaningful for this order';}
+  }
+  const tval = tCritical95(dof);
+  kCI95 = (!isNaN(kSE) && !isNaN(tval)) ? tval*kSE : NaN;
+  const residuals = rates.map((r,i)=>r-predicted[i]);
+  return {order, method:'differential', equation:differentialEquationLabel(order),
+          k, kSE, kCI95, dof, kUnit:kUnitStr(order, els.concUnit.value, els.timeUnit.value),
+          metricType, metric:r2OrMetric, r2: metricType==='r2'?r2OrMetric:null,
+          predicted, residuals, valid, invalidReason, rates, cArr:cs};
+}
+
+function fitDifferentialGeneral(rows, rates){
+  const cs = rows.map(r=>r.c);
+  const pts = cs.map((c,i)=>({c, r:rates[i]})).filter(p=>p.c>0 && p.r>0);
+  if(pts.length<3){
+    return {valid:false, invalidReason:'need at least 3 points with positive concentration and positive computed rate'};
+  }
+  const lnC = pts.map(p=>Math.log(p.c));
+  const lnR = pts.map(p=>Math.log(p.r));
+  const {slope, intercept, r2} = linreg(lnC, lnR);
+  const n = slope;         // order
+  const k = Math.exp(intercept);
+  return {valid:true, n, k, r2, lnC, lnR, points:pts};
+}
+
+/* =========================================================================
+   MAIN ANALYSIS DISPATCH
+   ========================================================================= */
+let currentResults = null; // holds everything needed by charts/report
+
+function runAnalysis(){
+  const rows = data.filter(r=>!isNaN(r.t) && !isNaN(r.c)).sort((a,b)=>a.t-b.t);
+  currentResults = {rows, mode, order};
+
+  if(rows.length<3){
+    els.resultsArea.innerHTML = `<div class="panel" style="text-align:center;color:var(--text-faint);padding:34px;">Add at least 3 observations to run the analysis.</div>`;
+    els.chartTabs.innerHTML=''; els.chartHolder.innerHTML='';
+    els.reportBox.textContent = 'Add data to generate a report.';
+    return;
+  }
+
+  if(mode==='integrated'){
+    const fits = STANDARD_ORDERS.map(o=>fitIntegrated(o, rows));
+    currentResults.fits = fits;
+    let customFit=null, selected;
+    if(order==='custom'){ customFit = fitIntegrated(customN, rows); selected = customFit; }
+    else { selected = pickSelected(fits, order); }
+    currentResults.customFit = customFit;
+    currentResults.selected = selected;
+    renderIntegratedResults(fits, selected, customFit);
+  } else if(mode==='differential'){
+    const rates = computeRates(rows);
+    const fits = STANDARD_ORDERS.map(o=>fitDifferentialOrder(o, rows, rates));
+    currentResults.fits = fits; currentResults.rates = rates;
+    let customFit=null, selected;
+    if(order==='custom'){ customFit = fitDifferentialOrder(customN, rows, rates); selected = customFit; }
+    else { selected = pickSelected(fits, order, true); }
+    currentResults.customFit = customFit;
+    currentResults.selected = selected;
+    renderDifferentialResults(fits, selected, customFit);
+  } else {
+    const rates = computeRates(rows);
+    const general = fitDifferentialGeneral(rows, rates);
+    const intFits = STANDARD_ORDERS.map(o=>fitIntegrated(o, rows));
+    const bestInt = pickSelected(intFits, 'best');
+    currentResults.rates = rates; currentResults.general = general; currentResults.intFits = intFits; currentResults.bestInt = bestInt;
+    renderAutoResults(general, intFits, bestInt);
+  }
+
+  renderChartTabs();
+  renderChart();
+  renderReport();
+}
+
+function pickSelected(fits, order, differential){
+  if(order==='best'){
+    const validFits = fits.filter(f=>f.valid);
+    const pool = validFits.length ? validFits : fits;
+    return pool.slice().sort((a,b)=>{
+      const av = differential ? (a.metricType==='r2'? a.r2 : -a.metric) : a.r2;
+      const bv = differential ? (b.metricType==='r2'? b.r2 : -b.metric) : b.r2;
+      return bv-av;
+    })[0];
+  }
+  return fits.find(f=>f.order===+order);
+}
+
+/* =========================================================================
+   RESULT CARD RENDERING
+   ========================================================================= */
+function fmt(x, d=4){
+  if(x===undefined||x===null||isNaN(x)) return '—';
+  if(!isFinite(x)) return '∞';
+  if(Math.abs(x)>=1000||((Math.abs(x)<0.001)&&x!==0)) return x.toExponential(3);
+  return x.toFixed(d);
+}
+function r2Color(r2){
+  if(r2===null||r2===undefined||isNaN(r2)) return 'inherit';
+  if(r2>=0.98) return 'var(--accent-2)';
+  if(r2>=0.90) return 'var(--accent)';
+  return 'var(--danger)';
+}
+function ciStr(f){
+  if(f.kCI95===undefined || isNaN(f.kCI95)) return '—';
+  return `± ${fmt(f.kCI95,5)}`;
+}
+
+function customCardHtml(f, metricLabel, metricVal, extraMetrics){
+  return `<div class="result-card selected" style="border-color:var(--accent-2);border-left-color:var(--accent-2);">
+      <div class="rc-head">
+        <div class="rc-title">Custom order</div>
+        <span class="rc-badge" style="border-color:var(--accent-2);color:var(--accent-2);background:var(--accent-2-soft);">n = ${fmt(f.order,3)}</span>
+      </div>
+      <div class="rc-eq">${f.equation}</div>
+      <div class="rc-metrics">
+        <div><div class="rc-metric-label">k</div><div class="rc-metric-val">${fmt(f.k,5)} ${f.kUnit}</div></div>
+        <div><div class="rc-metric-label">${metricLabel}</div><div class="rc-metric-val">${metricVal}</div></div>
+        ${extraMetrics||''}
+      </div>
+      ${!f.valid?`<div class="rc-invalid-note">Not eligible: ${f.invalidReason}</div>`:''}
+    </div>`;
+}
+
+function renderIntegratedResults(fits, selected, customFit){
+  // close-R2 warning
+  const validSorted = fits.filter(f=>f.valid).sort((a,b)=>b.r2-a.r2);
+  let warn='';
+  if(validSorted.length>=2 && (validSorted[0].r2-validSorted[1].r2)<0.01){
+    warn = `<div class="warn-box">Orders <b>${validSorted[0].order}</b> and <b>${validSorted[1].order}</b> have very similar R² (${fmt(validSorted[0].r2,4)} vs ${fmt(validSorted[1].r2,4)}). Consider more data, a wider concentration range, or the differential/auto-detect method before committing to an order.</div>`;
+  }
+  let html = '';
+  if(customFit){
+    html += '<div class="divider-label">YOUR CUSTOM ORDER</div><div class="results-grid" style="margin-bottom:6px;">'
+      + customCardHtml(customFit, 'R²', fmt(customFit.r2,4),
+          `<div><div class="rc-metric-label">RMSE</div><div class="rc-metric-val">${fmt(customFit.rmse,4)}</div></div>
+           <div><div class="rc-metric-label">t½</div><div class="rc-metric-val">${fmt(customFit.halfLife,3)}</div></div>
+           <div><div class="rc-metric-label">k, 95% CI</div><div class="rc-metric-val">${ciStr(customFit)}</div></div>`)
+      + '</div><div class="divider-label">STANDARD ORDERS</div>';
+  }
+  html += '<div class="results-grid">';
+  fits.forEach(f=>{
+    const isSel = selected && selected.order===f.order;
+    const isBest = validSorted[0] && validSorted[0].order===f.order;
+    html += `<div class="result-card ${isSel?'selected':''} ${f.valid?'':'invalid'}" style="border-left-color:${COLORS[f.order]||'var(--border-strong)'}">
+      <div class="rc-head">
+        <div class="rc-title">Order ${f.order}</div>
+        ${isBest?'<span class="rc-badge best">BEST FIT</span>':''}
+      </div>
+      <div class="rc-eq">${f.equation}</div>
+      <div class="rc-metrics">
+        <div><div class="rc-metric-label">k</div><div class="rc-metric-val">${fmt(f.k,5)} ${f.kUnit}</div></div>
+        <div><div class="rc-metric-label">R²</div><div class="rc-metric-val" style="color:${r2Color(f.r2)}">${fmt(f.r2,4)}</div></div>
+        <div><div class="rc-metric-label">RMSE</div><div class="rc-metric-val">${fmt(f.rmse,4)}</div></div>
+        <div><div class="rc-metric-label">t½</div><div class="rc-metric-val">${fmt(f.halfLife,3)}</div></div>
+        <div><div class="rc-metric-label">k, 95% CI</div><div class="rc-metric-val">${ciStr(f)}</div></div>
+      </div>
+      ${!f.valid?`<div class="rc-invalid-note">Not eligible: ${f.invalidReason}</div>`:''}
+    </div>`;
+  });
+  html += '</div>' + warn;
+  els.resultsArea.innerHTML = html;
+}
+
+function renderDifferentialResults(fits, selected, customFit){
+  const withR2 = fits.filter(f=>f.valid && f.metricType==='r2');
+  const bestR2 = withR2.slice().sort((a,b)=>b.metric-a.metric)[0];
+  let warn='';
+  if(withR2.length>=2){
+    const sorted = withR2.slice().sort((a,b)=>b.metric-a.metric);
+    if((sorted[0].metric-sorted[1].metric)<0.01){
+      warn = `<div class="warn-box">Orders <b>${sorted[0].order}</b> and <b>${sorted[1].order}</b> give very similar differential fit quality. Try the auto-detect mode, which estimates a continuous order instead of forcing an integer.</div>`;
+    }
+  }
+  let html = '';
+  if(customFit){
+    const ml = customFit.metricType==='cv' ? 'CV (rate)' : 'R²';
+    html += '<div class="divider-label">YOUR CUSTOM ORDER</div><div class="results-grid" style="margin-bottom:6px;">'
+      + customCardHtml(customFit, ml, fmt(customFit.metric,4), `<div><div class="rc-metric-label">k, 95% CI</div><div class="rc-metric-val">${ciStr(customFit)}</div></div>`)
+      + '</div><div class="divider-label">STANDARD ORDERS</div>';
+  }
+  html += '<div class="results-grid">';
+  fits.forEach(f=>{
+    const isSel = selected && selected.order===f.order;
+    const isBest = bestR2 && bestR2.order===f.order;
+    const metricLabel = f.metricType==='cv' ? 'CV (rate)' : 'R²';
+    const metricVal = f.metricType==='cv' ? fmt(f.metric,4) : fmt(f.metric,4);
+    html += `<div class="result-card ${isSel?'selected':''} ${f.valid?'':'invalid'}" style="border-left-color:${COLORS[f.order]||'var(--border-strong)'}">
+      <div class="rc-head">
+        <div class="rc-title">Order ${f.order}</div>
+        ${isBest?'<span class="rc-badge best">BEST FIT</span>':''}
+      </div>
+      <div class="rc-eq">${f.equation}</div>
+      <div class="rc-metrics">
+        <div><div class="rc-metric-label">k</div><div class="rc-metric-val">${fmt(f.k,5)} ${f.kUnit}</div></div>
+        <div><div class="rc-metric-label">${metricLabel}</div><div class="rc-metric-val" style="color:${f.metricType==='r2'?r2Color(f.metric):'inherit'}">${metricVal}</div></div>
+        <div><div class="rc-metric-label">k, 95% CI</div><div class="rc-metric-val">${ciStr(f)}</div></div>
+      </div>
+      ${f.metricType==='cv'?`<div class="hint" style="margin-top:8px;">Zero-order rate should be constant — lower CV (coefficient of variation) means a flatter, more consistent rate.</div>`:''}
+      ${!f.valid?`<div class="rc-invalid-note">Not eligible: ${f.invalidReason}</div>`:''}
+    </div>`;
+  });
+  html += '</div>' + warn;
+  els.resultsArea.innerHTML = html;
+}
+
+function renderAutoResults(general, intFits, bestInt){
+  if(!general.valid){
+    els.resultsArea.innerHTML = `<div class="panel"><div class="rc-invalid-note">Auto-detect unavailable: ${general.invalidReason}</div></div>`;
+    return;
+  }
+  const nearestInt = Math.round(general.n);
+  const nearestClamped = Math.max(0, Math.min(3, nearestInt));
+  const distFromInt = Math.abs(general.n - nearestClamped);
+  const agrees = bestInt && bestInt.order===nearestClamped;
+
+  let html = `<div class="auto-summary">
+    <p class="auto-headline">Estimated order: <span class="auto-order-value">n ≈ ${fmt(general.n,3)}</span></p>
+    <p style="color:var(--text-dim);font-size:13.5px;margin:0;">from the slope of ln(rate) vs ln(concentration) — no order was assumed.</p>
+    <div class="auto-grid">
+      <div><div class="auto-stat-label">RATE CONSTANT k</div><div class="auto-stat-val">${fmt(general.k,5)}</div></div>
+      <div><div class="auto-stat-label">LOG-LOG R²</div><div class="auto-stat-val">${fmt(general.r2,4)}</div></div>
+      <div><div class="auto-stat-label">NEAREST INTEGER ORDER</div><div class="auto-stat-val">${nearestClamped}</div></div>
+      <div><div class="auto-stat-label">BEST INTEGRATED FIT</div><div class="auto-stat-val">order ${bestInt?bestInt.order:'—'} (R² ${bestInt?fmt(bestInt.r2,4):'—'})</div></div>
+    </div>
+    ${distFromInt>0.15 ? `<div class="warn-box">The estimated order (${fmt(general.n,2)}) sits well away from any whole number. This can indicate a genuinely fractional order, a mixed / multi-step mechanism, or that the data doesn't yet pin the kinetics down cleanly — collect more points or a wider concentration range before concluding.</div>` : ''}
+    ${!agrees ? `<div class="warn-box">The differential estimate rounds to order ${nearestClamped}, but the best integrated fit is order ${bestInt?bestInt.order:'—'}. When the two methods disagree, treat the order as unresolved rather than picking whichever looks better.</div>` : `<div class="hint" style="margin-top:10px;">This agrees with the best integrated fit (order ${bestInt.order}), which increases confidence in the assignment.</div>`}
+  </div>`;
+
+  html += '<div class="divider-label">CROSS-CHECK: INTEGRATED FITS (n = 0, 1, 2, 3)</div>';
+  html += '<div class="results-grid">';
+  intFits.forEach(f=>{
+    const isBest = bestInt && bestInt.order===f.order;
+    html += `<div class="result-card ${f.valid?'':'invalid'} ${isBest?'selected':''}" style="border-left-color:${COLORS[f.order]||'var(--border-strong)'}">
+      <div class="rc-head"><div class="rc-title">Order ${f.order}</div>${isBest?'<span class="rc-badge best">BEST</span>':''}</div>
+      <div class="rc-eq">${f.equation}</div>
+      <div class="rc-metrics">
+        <div><div class="rc-metric-label">k</div><div class="rc-metric-val">${fmt(f.k,5)}</div></div>
+        <div><div class="rc-metric-label">R²</div><div class="rc-metric-val" style="color:${r2Color(f.r2)}">${fmt(f.r2,4)}</div></div>
+        <div><div class="rc-metric-label">k, 95% CI</div><div class="rc-metric-val">${ciStr(f)}</div></div>
+      </div>
+      ${!f.valid?`<div class="rc-invalid-note">Not eligible: ${f.invalidReason}</div>`:''}
+    </div>`;
+  });
+  html += '</div>';
+  els.resultsArea.innerHTML = html;
+}
+
+/* =========================================================================
+   CHART TABS
+   ========================================================================= */
+function chartTabList(){
+  if(mode==='integrated') return [['fit','Observed vs Predicted'],['linearized','Linearized fit'],['residuals','Residuals'],['allOrders','All orders']];
+  if(mode==='differential') return [['fit','Rate vs Concentration'],['rateTime','Rate vs Time'],['residuals','Residuals'],['allOrders','All orders']];
+  return [['general','Log-log order plot'],['rateTime','Rate vs Time'],['allOrders','Integrated: all orders']];
+}
+function renderChartTabs(){
+  const tabs = chartTabList();
+  if(!tabs.find(t=>t[0]===chartTab)) chartTab = tabs[0][0];
+  els.chartTabs.innerHTML = tabs.map(([id,label])=>
+    `<button class="chart-tab ${chartTab===id?'active':''}" data-tab="${id}">${label}</button>`).join('');
+  [...els.chartTabs.children].forEach(b=>b.addEventListener('click',()=>{ chartTab=b.dataset.tab; renderChartTabs(); renderChart(); }));
+}
+
+/* =========================================================================
+   SVG CHART ENGINE
+   ========================================================================= */
+const COLORS = {0:'#00e5ff', 1:'#39ff8c', 2:'#7c8cff', 3:'#ff36d6', custom:'#ffd166', obs:'#e8f6ff', fit:'#00e5ff', zero:'#ffd166'};
+function svgEl(tag, attrs){
+  const e=document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function niceDomain(min,max){
+  if(min===max){ min-=1; max+=1; }
+  const pad=(max-min)*0.08;
+  return [min-pad, max+pad];
+}
+function drawChart(container, {series, xLabel, yLabel, width=760, height=380, xLine=false}){
+  container.innerHTML='';
+  const W=width,H=height, m={l:64,r:24,t:18,b:48};
+  const svg = svgEl('svg',{class:'chart', viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
+
+  let allX=[], allY=[];
+  series.forEach(s=>s.points.forEach(p=>{allX.push(p.x); allY.push(p.y);}));
+  if(!allX.length){ container.appendChild(svg); return; }
+  const [xmin,xmax] = niceDomain(Math.min(...allX), Math.max(...allX));
+  const [ymin,ymax] = niceDomain(Math.min(...allY), Math.max(...allY));
+  const sx = x => m.l + (x-xmin)/(xmax-xmin)*(W-m.l-m.r);
+  const sy = y => H-m.b - (y-ymin)/(ymax-ymin)*(H-m.b-m.t);
+
+  // gridlines + ticks
+  const ticks=5;
+  for(let i=0;i<=ticks;i++){
+    const gx = xmin + (xmax-xmin)*i/ticks;
+    const gy = ymin + (ymax-ymin)*i/ticks;
+    const X = sx(gx), Y = sy(gy);
+    svg.appendChild(svgEl('line',{x1:X,x2:X,y1:m.t,y2:H-m.b,stroke:'rgba(124,180,255,0.07)'}));
+    svg.appendChild(svgEl('line',{x1:m.l,x2:W-m.r,y1:Y,y2:Y,stroke:'rgba(124,180,255,0.07)'}));
+    const tx = svgEl('text',{x:X,y:H-m.b+18,'text-anchor':'middle',fill:'#5a7fa8','font-size':'10.5',"font-family":"IBM Plex Mono, monospace"});
+    tx.textContent = fmtTick(gx); svg.appendChild(tx);
+    const ty = svgEl('text',{x:m.l-10,y:Y+4,'text-anchor':'end',fill:'#5a7fa8','font-size':'10.5',"font-family":"IBM Plex Mono, monospace"});
+    ty.textContent = fmtTick(gy); svg.appendChild(ty);
+  }
+  // zero line
+  if(xLine && ymin<0 && ymax>0){
+    svg.appendChild(svgEl('line',{x1:m.l,x2:W-m.r,y1:sy(0),y2:sy(0),stroke:'rgba(0,229,255,0.45)','stroke-dasharray':'4,4'}));
+  }
+  // axes
+  svg.appendChild(svgEl('line',{x1:m.l,x2:W-m.r,y1:H-m.b,y2:H-m.b,stroke:'rgba(150,200,255,0.35)'}));
+  svg.appendChild(svgEl('line',{x1:m.l,x2:m.l,y1:m.t,y2:H-m.b,stroke:'rgba(150,200,255,0.35)'}));
+  // axis labels
+  const xl = svgEl('text',{x:(m.l+W-m.r)/2,y:H-6,'text-anchor':'middle',fill:'#93b4d6','font-size':'11.5',"font-family":"IBM Plex Sans, sans-serif"});
+  xl.textContent=xLabel; svg.appendChild(xl);
+  const yl = svgEl('text',{x:14,y:(m.t+H-m.b)/2,'text-anchor':'middle',fill:'#93b4d6','font-size':'11.5',"font-family":"IBM Plex Sans, sans-serif", transform:`rotate(-90 14 ${(m.t+H-m.b)/2})`});
+  yl.textContent=yLabel; svg.appendChild(yl);
+
+  // series
+  series.forEach(s=>{
+    if(s.type==='line'){
+      const pts = s.points.slice().sort((a,b)=>a.x-b.x);
+      const d = pts.map((p,i)=>`${i===0?'M':'L'}${sx(p.x)},${sy(p.y)}`).join(' ');
+      svg.appendChild(svgEl('path',{d, fill:'none', stroke:s.color, 'stroke-width':2}));
+    } else {
+      s.points.forEach(p=>{
+        svg.appendChild(svgEl('circle',{cx:sx(p.x), cy:sy(p.y), r:4, fill:s.color, 'fill-opacity':0.85, stroke:'#050914','stroke-width':1}));
+      });
+    }
+  });
+  container.appendChild(svg);
+
+  // legend
+  const legendHolder = document.createElement('div');
+  legendHolder.className='legend';
+  series.forEach(s=>{
+    if(!s.label) return;
+    const sp=document.createElement('span');
+    sp.innerHTML = `<i style="background:${s.color}"></i>${s.label}`;
+    legendHolder.appendChild(sp);
+  });
+  container.appendChild(legendHolder);
+}
+function fmtTick(x){
+  if(Math.abs(x)>=1000||((Math.abs(x)<0.01)&&x!==0)) return x.toExponential(1);
+  return (Math.round(x*1000)/1000).toString();
+}
+
+/* =========================================================================
+   CHART RENDER DISPATCH
+   ========================================================================= */
+function renderChart(){
+  const r = currentResults;
+  const tUnit = els.timeUnit.value, cUnit = els.concUnit.value;
+  if(!r || !r.rows || r.rows.length<3){ els.chartHolder.innerHTML=''; return; }
+
+  if(mode==='integrated'){
+    const sel = r.selected;
+    if(chartTab==='fit'){
+      drawChart(els.chartHolder,{
+        xLabel:`Time (${tUnit})`, yLabel:`Concentration (${cUnit})`,
+        series:[
+          {type:'scatter', color:COLORS.obs, label:'Observed', points:sel.tArr.map((t,i)=>({x:t,y:sel.cArr[i]}))},
+          {type:'line', color:COLORS.fit, label:`Predicted (order ${sel.order})`, points:sel.tArr.map((t,i)=>({x:t,y:sel.predicted[i]}))},
+        ]});
+    } else if(chartTab==='linearized'){
+      const yLabelMap={0:`[A] (${cUnit})`,1:`ln[A]`,2:`1/[A]`,3:`1/[A]²`};
+      const yLabel = yLabelMap[sel.order] !== undefined ? yLabelMap[sel.order] : `[A]^(1−${trimNum(sel.order)})`;
+      drawChart(els.chartHolder,{
+        xLabel:`Time (${tUnit})`, yLabel,
+        series:[
+          {type:'scatter', color:COLORS.obs, label:'Linearized data', points:sel.linX.map((x,i)=>({x,y:sel.linY[i]}))},
+          {type:'line', color:COLORS.fit, label:'Linear fit', points:sel.linX.map(x=>({x,y:sel.slope*x+sel.intercept}))},
+        ]});
+    } else if(chartTab==='residuals'){
+      drawChart(els.chartHolder,{
+        xLabel:`Time (${tUnit})`, yLabel:'Residual (obs − pred)', xLine:true,
+        series:[{type:'scatter', color:COLORS.fit, label:'Residuals', points:sel.tArr.map((t,i)=>({x:t,y:sel.residuals[i]}))}]});
+    } else {
+      const series=[{type:'scatter', color:COLORS.obs, label:'Observed', points:r.fits[0].tArr.map((t,i)=>({x:t,y:r.fits[0].cArr[i]}))}];
+      r.fits.forEach(f=>{ if(f.valid) series.push({type:'line', color:COLORS[f.order], label:`Order ${f.order} (R²=${fmt(f.r2,3)})`, points:f.tArr.map((t,i)=>({x:t,y:f.predicted[i]}))}); });
+      if(r.customFit && r.customFit.valid) series.push({type:'line', color:COLORS.custom, label:`Custom n=${fmt(r.customFit.order,2)} (R²=${fmt(r.customFit.r2,3)})`, points:r.customFit.tArr.map((t,i)=>({x:t,y:r.customFit.predicted[i]}))});
+      drawChart(els.chartHolder,{xLabel:`Time (${tUnit})`, yLabel:`Concentration (${cUnit})`, series});
+    }
+  }
+
+  else if(mode==='differential'){
+    const sel = r.selected;
+    if(chartTab==='fit'){
+      const pts = sel.cArr.map((c,i)=>({x:c,y:r.rates[i]}));
+      const curve = sel.order===0
+        ? sel.cArr.map(c=>({x:c,y:sel.k})).sort((a,b)=>a.x-b.x)
+        : sel.cArr.slice().sort((a,b)=>a-b).map(c=>({x:c,y:sel.k*Math.pow(c,sel.order)}));
+      drawChart(els.chartHolder,{
+        xLabel:`Concentration (${cUnit})`, yLabel:`Rate (${cUnit}/${tUnit})`,
+        series:[
+          {type:'scatter', color:COLORS.obs, label:'Observed rate', points:pts},
+          {type:'line', color:COLORS.fit, label:`Fit (order ${sel.order})`, points:curve},
+        ]});
+    } else if(chartTab==='rateTime'){
+      drawChart(els.chartHolder,{
+        xLabel:`Time (${tUnit})`, yLabel:`Rate (${cUnit}/${tUnit})`,
+        series:[{type:'scatter', color:COLORS.obs, label:'Computed rate (finite difference)', points:r.rows.map((row,i)=>({x:row.t,y:r.rates[i]}))}]});
+    } else if(chartTab==='residuals'){
+      drawChart(els.chartHolder,{
+        xLabel:`Concentration (${cUnit})`, yLabel:'Residual (obs − pred rate)', xLine:true,
+        series:[{type:'scatter', color:COLORS.fit, label:'Residuals', points:sel.cArr.map((c,i)=>({x:c,y:sel.residuals[i]}))}]});
+    } else {
+      const series=[{type:'scatter', color:COLORS.obs, label:'Observed rate', points:r.fits[0].cArr.map((c,i)=>({x:c,y:r.rates[i]}))}];
+      r.fits.forEach(f=>{
+        if(!f.valid) return;
+        const curve = f.order===0
+          ? f.cArr.map(c=>({x:c,y:f.k})).sort((a,b)=>a.x-b.x)
+          : f.cArr.slice().sort((a,b)=>a-b).map(c=>({x:c,y:f.k*Math.pow(c,f.order)}));
+        series.push({type:'line', color:COLORS[f.order], label:`Order ${f.order}`, points:curve});
+      });
+      if(r.customFit && r.customFit.valid){
+        const cf=r.customFit;
+        const curve = cf.order===0
+          ? cf.cArr.map(c=>({x:c,y:cf.k})).sort((a,b)=>a.x-b.x)
+          : cf.cArr.slice().sort((a,b)=>a-b).map(c=>({x:c,y:cf.k*Math.pow(c,cf.order)}));
+        series.push({type:'line', color:COLORS.custom, label:`Custom n=${fmt(cf.order,2)}`, points:curve});
+      }
+      drawChart(els.chartHolder,{xLabel:`Concentration (${cUnit})`, yLabel:`Rate (${cUnit}/${tUnit})`, series});
+    }
+  }
+
+  else { // auto
+    if(chartTab==='general'){
+      if(!r.general.valid){ els.chartHolder.innerHTML='<p class="hint">Not enough valid points for the log-log fit.</p>'; return; }
+      const g=r.general;
+      drawChart(els.chartHolder,{
+        xLabel:`ln(Concentration)`, yLabel:`ln(Rate)`,
+        series:[
+          {type:'scatter', color:COLORS.obs, label:'ln(rate) vs ln(C)', points:g.lnC.map((x,i)=>({x,y:g.lnR[i]}))},
+          {type:'line', color:COLORS.fit, label:`Slope = order ≈ ${fmt(g.n,3)}`, points:g.lnC.map(x=>({x,y:g.slope*x+g.intercept}))},
+        ]});
+      const s = document.createElement('p'); s.className='hint';
+      s.textContent = 'Slope of this line = reaction order · intercept = ln(k). This is the only chart on this page that determines the order without assuming one.';
+      els.chartHolder.appendChild(s);
+    } else if(chartTab==='rateTime'){
+      drawChart(els.chartHolder,{
+        xLabel:`Time (${tUnit})`, yLabel:`Rate (${cUnit}/${tUnit})`,
+        series:[{type:'scatter', color:COLORS.obs, label:'Computed rate (finite difference)', points:r.rows.map((row,i)=>({x:row.t,y:r.rates[i]}))}]});
+    } else {
+      const series=[{type:'scatter', color:COLORS.obs, label:'Observed', points:r.intFits[0].tArr.map((t,i)=>({x:t,y:r.intFits[0].cArr[i]}))}];
+      r.intFits.forEach(f=>{ if(f.valid) series.push({type:'line', color:COLORS[f.order], label:`Order ${f.order} (R²=${fmt(f.r2,3)})`, points:f.tArr.map((t,i)=>({x:t,y:f.predicted[i]}))}); });
+      drawChart(els.chartHolder,{xLabel:`Time (${tUnit})`, yLabel:`Concentration (${cUnit})`, series});
+    }
+  }
+}
+
+/* =========================================================================
+   REPORT
+   ========================================================================= */
+function renderReport(){
+  const r = currentResults;
+  if(!r || !r.rows || r.rows.length<3){ els.reportBox.textContent='Add data to generate a report.'; return; }
+  const name = document.getElementById('expName').value || '(unnamed experiment)';
+  const temp = document.getElementById('expTemp').value || '(not recorded)';
+  const tUnit = els.timeUnit.value, cUnit = els.concUnit.value;
+  let lines = [];
+  lines.push('REACTION KINETICS ANALYSIS REPORT');
+  lines.push('='.repeat(38));
+  lines.push(`Experiment: ${name}`);
+  lines.push(`Temperature: ${temp}`);
+  lines.push(`Observations: ${r.rows.length}`);
+  lines.push(`Time unit: ${tUnit}   Concentration unit: ${cUnit}`);
+  lines.push('');
+
+  if(mode==='integrated'){
+    const sel=r.selected;
+    lines.push(`METHOD: Integrated rate law`);
+    lines.push(`Selected order: ${fmt(sel.order,3)}${order==='best'?' (auto-selected: highest valid R²)':(order==='custom'?' (custom, user-specified)':' (user-selected)')}`);
+    lines.push(`Rate law: ${sel.equation}`);
+    lines.push(`k = ${fmt(sel.k,5)} ${sel.kUnit}`);
+    lines.push(`R² = ${fmt(sel.r2,4)}    RMSE = ${fmt(sel.rmse,4)}    t1/2 = ${fmt(sel.halfLife,4)} ${tUnit}`);
+    lines.push('');
+    lines.push('All orders:');
+    r.fits.forEach(f=> lines.push(`  order ${f.order}: k=${fmt(f.k,5)}  R²=${fmt(f.r2,4)}  ${f.valid?'':'(INELIGIBLE — '+f.invalidReason+')'}`));
+  } else if(mode==='differential'){
+    const sel=r.selected;
+    lines.push(`METHOD: Differential rate law`);
+    lines.push(`Selected order: ${fmt(sel.order,3)}${order==='best'?' (auto-selected: highest valid fit quality)':(order==='custom'?' (custom, user-specified)':' (user-selected)')}`);
+    lines.push(`Rate law: ${sel.equation}`);
+    lines.push(`k = ${fmt(sel.k,5)} ${sel.kUnit}`);
+    lines.push(sel.metricType==='r2' ? `R² = ${fmt(sel.metric,4)}` : `Rate CV = ${fmt(sel.metric,4)} (lower = more consistent with zero order)`);
+    lines.push('Rates were estimated from concentration data by finite differences (central difference for interior points).');
+    lines.push('');
+    lines.push('All orders:');
+    r.fits.forEach(f=> lines.push(`  order ${f.order}: k=${fmt(f.k,5)}  ${f.metricType==='r2'?'R²='+fmt(f.metric,4):'CV='+fmt(f.metric,4)}  ${f.valid?'':'(INELIGIBLE — '+f.invalidReason+')'}`));
+  } else {
+    const g=r.general;
+    lines.push('METHOD: Auto-detect (unknown order)');
+    if(g.valid){
+      lines.push(`Estimated order (from ln[rate] vs ln[C] slope): n ≈ ${fmt(g.n,4)}`);
+      lines.push(`Rate constant: k = ${fmt(g.k,5)}`);
+      lines.push(`Log-log fit R² = ${fmt(g.r2,4)}`);
+      lines.push(`Nearest integer order: ${Math.max(0,Math.min(3,Math.round(g.n)))}`);
+      lines.push(`Best integrated fit (cross-check): order ${r.bestInt?r.bestInt.order:'—'}, R² = ${r.bestInt?fmt(r.bestInt.r2,4):'—'}`);
+    } else {
+      lines.push(`Auto-detect unavailable: ${g.invalidReason}`);
+    }
+  }
+
+  lines.push('');
+  lines.push('CONCLUSION');
+  lines.push('-'.repeat(10));
+  lines.push(buildConclusion(r));
+
+  if(r.arrhenius && r.arrhenius.n>=2){
+    const ar = r.arrhenius;
+    lines.push('');
+    lines.push('ARRHENIUS ANALYSIS');
+    lines.push('-'.repeat(18));
+    lines.push(`Based on ${ar.n} (temperature, k) pairs, ln k = ln A − (Eₐ/R)(1/T):`);
+    lines.push(`Activation energy Eₐ = ${fmt(ar.Ea/1000,3)} kJ/mol (${fmt(ar.Ea/4184,3)} kcal/mol)`);
+    lines.push(`Pre-exponential factor A = ${fmt(ar.A,5)}`);
+    lines.push(`Fit R² = ${fmt(ar.r2,4)}${ar.n<3?'  (only 2 points — not a meaningful R²)':''}`);
+  }
+
+  lines.push('');
+  lines.push('Note: R² (or fit quality) supports comparison between candidate models but does not, by itself,');
+  lines.push('prove the underlying reaction mechanism. Residual patterns, replicate experiments and chemical');
+  lines.push('context should also be considered before assigning a mechanism.');
+
+  els.reportBox.textContent = lines.join('\n');
+}
+
+function buildConclusion(r){
+  if(mode==='integrated'){
+    const sel=r.selected;
+    if(!sel.valid) return `The order-${sel.order} model is not eligible for this dataset (${sel.invalidReason}); consider another order or method.`;
+    return `The data are best described by an order-${sel.order} integrated rate law (R² = ${fmt(sel.r2,4)}), giving k = ${fmt(sel.k,5)} ${sel.kUnit}. This conclusion assumes the reaction order is a whole number; use auto-detect to check that assumption.`;
+  }
+  if(mode==='differential'){
+    const sel=r.selected;
+    if(!sel.valid) return `The order-${sel.order} differential model is not eligible for this dataset (${sel.invalidReason}); consider another order or method.`;
+    return `The differential (rate-based) analysis is most consistent with order ${sel.order}, giving k = ${fmt(sel.k,5)} ${sel.kUnit}. Because differential rates come from finite differences of noisy data, treat this as a secondary check alongside the integrated method.`;
+  }
+  const g=r.general;
+  if(!g.valid) return 'Not enough valid data to estimate the order automatically.';
+  const nearest = Math.max(0,Math.min(3,Math.round(g.n)));
+  const agrees = r.bestInt && r.bestInt.order===nearest;
+  if(Math.abs(g.n-nearest)<=0.15 && agrees){
+    return `The data support an order-${nearest} reaction (estimated n = ${fmt(g.n,3)}), and this agrees with the best integrated fit. k ≈ ${fmt(g.k,5)}.`;
+  }
+  if(Math.abs(g.n-nearest)>0.15){
+    return `The estimated order (n ≈ ${fmt(g.n,3)}) does not sit close to a whole number. This may indicate a genuinely fractional order or a more complex mechanism (e.g. multi-step or catalytic); a single simple order should not be assumed without further data.`;
+  }
+  return `The differential estimate (n ≈ ${fmt(g.n,3)}, rounding to order ${nearest}) disagrees with the best integrated fit (order ${r.bestInt?r.bestInt.order:'—'}). Treat the order as unresolved and gather more data before concluding.`;
+}
+
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const blob = new Blob([els.reportBox.textContent], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const name = (document.getElementById('expName').value||'kinetics_report').replace(/[^a-z0-9\-_]+/gi,'_');
+  a.download = `${name}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('printBtn').addEventListener('click',()=>{ window.print(); });
+
+document.getElementById('expName').addEventListener('input', renderReport);
+document.getElementById('expTemp').addEventListener('input', renderReport);
+
+/* =========================================================================
+   ARRHENIUS ANALYSIS (advanced: multi-temperature k -> Ea, A)
+   ========================================================================= */
+let arrData = []; // [{T:number, k:number}] — T stored in whatever unit arrTempUnit currently is
+const R_GAS = 8.314; // J/mol/K
+const arrEls = {
+  body: document.getElementById('arrBody'),
+  thTemp: document.getElementById('arrThTemp'),
+  tempUnit: document.getElementById('arrTempUnit'),
+  resultsArea: document.getElementById('arrResultsArea'),
+  chartHolder: document.getElementById('arrChartHolder'),
+};
+function arrToKelvin(T){ return arrEls.tempUnit.value==='C' ? T+273.15 : T; }
+function renderArrTable(){
+  arrEls.body.innerHTML='';
+  arrData.forEach((row,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td class="idx">${i+1}</td>
+      <td><input type="number" step="any" value="${row.T}" data-i="${i}" data-f="T"></td>
+      <td><input type="number" step="any" value="${row.k}" data-i="${i}" data-f="k"></td>
+      <td class="rm"><button class="rm-btn" data-rm="${i}" title="Remove">×</button></td>`;
+    arrEls.body.appendChild(tr);
+  });
+  arrEls.thTemp.textContent = `Temperature (${arrEls.tempUnit.value==='C'?'°C':'K'})`;
+}
+arrEls.body.addEventListener('input', e=>{
+  const t=e.target;
+  if(t.dataset.i===undefined) return;
+  const i=+t.dataset.i, f=t.dataset.f;
+  const v=parseFloat(t.value);
+  arrData[i][f]=isNaN(v)?0:v;
+  renderArrhenius();
+});
+arrEls.body.addEventListener('click', e=>{
+  if(e.target.dataset.rm!==undefined){
+    arrData.splice(+e.target.dataset.rm,1);
+    renderArrTable(); renderArrhenius();
+  }
+});
+document.getElementById('arrAddRowBtn').addEventListener('click',()=>{
+  arrData.push({T: arrEls.tempUnit.value==='C'?25:298, k:0});
+  renderArrTable(); renderArrhenius();
+});
+document.getElementById('arrClearBtn').addEventListener('click',()=>{
+  arrData=[]; renderArrTable(); renderArrhenius();
+});
+document.getElementById('arrAddFromResultsBtn').addEventListener('click',()=>{
+  const r = currentResults;
+  const sel = r && (r.selected || (r.general && r.general.valid ? {k:r.general.k} : null));
+  if(!sel || !sel.k || isNaN(sel.k)){ alert('No valid rate constant is currently selected on the Results page.'); return; }
+  const tempStr = document.getElementById('expTemp').value;
+  const tMatch = tempStr.match(/-?\d+(\.\d+)?/);
+  const T = tMatch ? parseFloat(tMatch[0]) : (arrEls.tempUnit.value==='C'?25:298);
+  arrData.push({T, k: sel.k});
+  renderArrTable(); renderArrhenius();
+});
+document.getElementById('arrExampleBtn').addEventListener('click',()=>{
+  arrEls.tempUnit.value='K';
+  const Ea=50000, A=5e10; // J/mol, 1/s (illustrative)
+  const temps=[288,298,308,318,328];
+  arrData = temps.map(T=>({T: Math.round(T), k: round4(A*Math.exp(-Ea/(R_GAS*T)))}));
+  renderArrTable(); renderArrhenius();
+});
+arrEls.tempUnit.addEventListener('change', ()=>{ renderArrTable(); renderArrhenius(); });
+
+function renderArrhenius(){
+  const pts = arrData.filter(r=>!isNaN(r.T)&&!isNaN(r.k)&&r.k>0).map(r=>({T:arrToKelvin(r.T), k:r.k})).filter(p=>p.T>0);
+  if(pts.length<2){
+    arrEls.resultsArea.innerHTML = `<div class="panel" style="text-align:center;color:var(--text-faint);padding:30px;">Add at least 2 (Temperature, k) points to run the Arrhenius analysis.</div>`;
+    arrEls.chartHolder.innerHTML='';
+    return;
+  }
+  const invT = pts.map(p=>1/p.T);
+  const lnK = pts.map(p=>Math.log(p.k));
+  const {slope, intercept, r2} = linreg(invT, lnK);
+  const Ea = -slope*R_GAS;         // J/mol
+  const A = Math.exp(intercept);
+  const lowN = pts.length<3;
+
+  let html = `<div class="auto-summary">
+    <p class="auto-headline">Activation energy: <span class="auto-order-value">Eₐ ≈ ${fmt(Ea/1000,2)} kJ/mol</span></p>
+    <p style="color:var(--text-dim);font-size:13.5px;margin:0;">from the slope of ln k vs 1/T across ${pts.length} temperature${pts.length===1?'':'s'}.</p>
+    <div class="auto-grid">
+      <div><div class="auto-stat-label">Eₐ (kJ/mol)</div><div class="auto-stat-val">${fmt(Ea/1000,3)}</div></div>
+      <div><div class="auto-stat-label">Eₐ (kcal/mol)</div><div class="auto-stat-val">${fmt(Ea/4184,3)}</div></div>
+      <div><div class="auto-stat-label">Pre-exponential A</div><div class="auto-stat-val">${fmt(A,4)}</div></div>
+      <div><div class="auto-stat-label">R² (ln k vs 1/T)</div><div class="auto-stat-val" style="color:${r2Color(r2)}">${fmt(r2,4)}</div></div>
+    </div>
+    ${lowN ? `<div class="warn-box">Only ${pts.length} points — R² from 2 points is always 1 and not meaningful. Add a third temperature to check linearity (an Arrhenius plot that curves suggests a temperature-dependent mechanism change).</div>` : ''}
+  </div>`;
+  arrEls.resultsArea.innerHTML = html;
+
+  drawChart(arrEls.chartHolder, {
+    xLabel:'1/T (1/K)', yLabel:'ln k',
+    series:[
+      {type:'scatter', color:COLORS.obs, label:'Experimental points', points:invT.map((x,i)=>({x,y:lnK[i]}))},
+      {type:'line', color:COLORS.fit, label:`Fit: Eₐ ≈ ${fmt(Ea/1000,1)} kJ/mol`, points:invT.map(x=>({x,y:slope*x+intercept}))},
+    ]});
+
+  currentResults.arrhenius = {pts, Ea, A, r2, n:pts.length};
+  renderReport();
+}
+
+/* =========================================================================
+   PAGE NAVIGATION
+   ========================================================================= */
+const PAGES = ['sec-data','sec-method','sec-results','sec-charts','sec-report','sec-arrhenius'];
+const PAGE_LABELS = {'sec-data':'Data','sec-method':'Method','sec-results':'Results','sec-charts':'Charts','sec-report':'Report','sec-arrhenius':'Arrhenius'};
+let currentPage = 'sec-data';
+let furthestPage = 0;
+
+function showPage(id){
+  currentPage = id;
+  const idx = PAGES.indexOf(id);
+  furthestPage = Math.max(furthestPage, idx);
+  PAGES.forEach(p=>{
+    document.getElementById(p).classList.toggle('active-page', p===id);
+  });
+  [...document.querySelectorAll('.page-nav-item')].forEach(b=>{
+    const bIdx = PAGES.indexOf(b.dataset.page);
+    b.classList.toggle('active', b.dataset.page===id);
+    b.classList.toggle('done', bIdx < idx || (bIdx<=furthestPage && bIdx!==idx));
+  });
+  document.getElementById('pagerBack').style.visibility = idx===0 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('pagerNext');
+  nextBtn.textContent = idx===PAGES.length-1 ? 'Start over ↺' : `Continue → ${PAGE_LABELS[PAGES[idx+1]]}`;
+  document.getElementById('pagerStatus').textContent = `Step ${idx+1} of ${PAGES.length} — ${PAGE_LABELS[id]}`;
+  window.scrollTo({top:0, behavior:'smooth'});
+  if(id==='sec-charts'){ renderChartTabs(); renderChart(); }
+  if(id==='sec-arrhenius'){ renderArrhenius(); }
+  if(id==='sec-report'){ renderReport(); }
+}
+document.querySelectorAll('.page-nav-item').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+document.getElementById('pagerBack').addEventListener('click',()=>{
+  const idx=PAGES.indexOf(currentPage);
+  if(idx>0) showPage(PAGES[idx-1]);
+});
+document.getElementById('pagerNext').addEventListener('click',()=>{
+  const idx=PAGES.indexOf(currentPage);
+  if(idx<PAGES.length-1) showPage(PAGES[idx+1]); else showPage(PAGES[0]);
+});
+document.addEventListener('keydown', e=>{
+  const tag = (e.target.tagName||'').toLowerCase();
+  if(tag==='input' || tag==='textarea' || tag==='select') return;
+  if(e.key==='ArrowRight') document.getElementById('pagerNext').click();
+  if(e.key==='ArrowLeft') document.getElementById('pagerBack').click();
+});
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+data = genExample('first');
+renderTable();
+renderModeUI();
+runAnalysis();
+showPage('sec-data');
+
+})();
+</script>
+</body>
+</html>
